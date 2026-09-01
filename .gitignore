@@ -1,0 +1,44 @@
+# ==============================
+# Bhasha Shiksha Setu Backend
+# ==============================
+
+# Secrets / environment files
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Uploaded user files
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Test / coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
