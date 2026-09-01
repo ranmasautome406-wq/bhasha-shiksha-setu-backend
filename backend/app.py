@@ -13,6 +13,39 @@ from backend.database import init_db
 
 def create_app(config_object=Config):
     app = Flask(__name__, static_folder=None)
+    @app.get("/")
+def backend_home():
+    return jsonify({
+        "success": True,
+        "message": "Bhasha Shiksha Setu Backend is running",
+        "project": "Bhasha Shiksha Setu",
+        "version": "1.0",
+        "api": "/api",
+        "health": "/api/health"
+    })
+    @app.get("/api")
+def api_home():
+    return jsonify({
+        "success": True,
+        "message": "Bhasha Shiksha Setu API",
+        "endpoints": {
+            "health": "/api/health",
+            "auth": "/api/auth",
+            "student": "/api/student",
+            "teacher": "/api/teacher",
+            "tutor": "/api/tutor",
+            "content": "/api/content",
+            "voice": "/api/voice"
+        }
+    })
+    @app.get("/api/health")
+def health():
+    return jsonify({
+        "success": True,
+        "status": "healthy",
+        "project": "Bhasha Shiksha Setu",
+        "backend": "online"
+    })
     app.config.from_object(config_object)
     # Re-read env at startup so runtime overrides (tests, Docker) always win.
     app.config["SQLALCHEMY_DATABASE_URI"] = (
