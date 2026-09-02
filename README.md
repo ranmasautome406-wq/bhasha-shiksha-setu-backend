@@ -322,3 +322,29 @@ homepage → ask the AI assistant → change AI instructions in Settings → ask
   the prototype runs with zero external keys; add `AI_API_KEY` to unlock full LLM answers.
 - **Admin → everywhere**: change announcement/hero text/AI instructions in the
   admin and refresh the public site to see the change.
+
+
+## New SIH learning features
+
+This release adds Smart Practice, learning recommendations, and AI Video Translator/Dubbing.
+
+### Video dubbing
+Set `ELEVENLABS_API_KEY` in the Render backend environment. The key must never be committed to GitHub or placed in frontend JavaScript. The student endpoint accepts an uploaded video/audio file or a public URL the user has permission to process.
+
+Endpoints:
+- `POST /api/video-dubbing/create`
+- `GET /api/video-dubbing`
+- `GET /api/video-dubbing/<id>/status`
+- `GET /api/video-dubbing/<id>/download`
+- `DELETE /api/video-dubbing/<id>`
+
+The integration uses ElevenLabs' documented Dubbing API. Dubbing is asynchronous, so the frontend polls status and only shows download after the provider reports the dub is ready.
+
+### Smart learning
+- `POST /api/quiz`
+- `GET /api/quiz/<id>`
+- `POST /api/quiz/<id>/submit`
+- `GET /api/quiz/student/history`
+- `GET /api/learning/profile`
+- `GET /api/learning/weak-topics`
+- `GET /api/learning/recommendations`
