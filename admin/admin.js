@@ -1,362 +1,54 @@
-let API_BASE = localStorage.getItem("bhasha_api_url") || "";
-
+/* Bhasha Shiksha Setu - Functional Admin Console */
+let API_BASE = localStorage.getItem("bhasha_api_url") || window.location.origin;
+let TOKEN = localStorage.getItem("bhasha_admin_token") || "";
+let currentUser = null;
 let requests = 0;
 let events = [];
-
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => document.querySelectorAll(selector);
-
-
-/* =========================
-   TOAST
-========================= */
-
-function toast(message) {
-
-    const element = $("#toast");
-
-    element.textContent = message;
-
-    element.classList.add("show");
-
-    clearTimeout(window.toastTimer);
-
-    window.toastTimer = setTimeout(() => {
-        element.classList.remove("show");
-    }, 2500);
-}
-
-
-/* =========================
-   ACTIVITY LOG
-========================= */
-
-function logActivity(message) {
-
-    events.unshift({
-        message: message,
-        time: new Date().toLocaleTimeString()
-    });
-
-    renderActivity();
-}
-
-
-function renderActivity() {
-
-    const html = events.map(event => {
-
-        return `
-            <div class="activity">
-
-                <span class="status-dot"></span>
-
-                <div>
-                    <b>${escapeHTML(event.message)}</b>
-                    <small>${escapeHTML(event.time)}</small>
-                </div>
-
-            </div>
-        `;
-
-    }).join("");
-
-    $("#activityList").innerHTML =
-        html || "<p>No activity yet.</p>";
-
-    $("#fullActivity").innerHTML =
-        html || "<p>No activity yet.</p>";
-
-    $("#requests").textContent = requests;
-}
-
-
-function escapeHTML(value) {
-
-    return String(value).replace(
-        /[&<>"']/g,
-        character => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#039;"
-        })[character]
-    );
-}
-
-
-/* =========================
-   PAGE NAVIGATION
-========================= */
-
-function showPage(pageId) {
-
-    $$(".page").forEach(page => {
-        page.classList.remove("active");
-    });
-
-    const selectedPage = $("#" + pageId);
-
-    if (selectedPage) {
-        selectedPage.classList.add("active");
-    }
-
-    $$(".nav-item").forEach(item => {
-
-        item.classList.toggle(
-            "active",
-            item.dataset.section === pageId
-        );
-
-    });
-
-    const titles = {
-
-        dashboard: "Dashboard",
-        students: "Students",
-        teachers: "Teachers",
-        lessons: "Lessons",
-        tutor: "AI Tutor",
-        languages: "Languages",
-        uploads: "Uploads",
-        activity: "Activity",
-        settings: "Settings"
-
-    };
-
-    $("#pageTitle").textContent =
-        titles[pageId] || "Dashboard";
-
-    $("#sidebar").classList.remove("open");
-}
-
-
-/* Sidebar navigation */
-
-$$(".nav-item").forEach(item => {
-
-    item.addEventListener("click", () => {
-
-        showPage(item.dataset.section);
-
-    });
-
-});
-
-
-/* Quick actions */
-
-$$(".quick-actions button").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        showPage(button.dataset.section);
-
-    });
-
-});
-
-
-/* Mobile menu */
-
-$("#menuBtn").addEventListener("click", () => {
-
-    $("#sidebar").classList.toggle("open");
-
-});
-
-
-/* Clear activity */
-
-$("#clearActivity").addEventListener("click", () => {
-
-    events = [];
-
-    renderActivity();
-
-    toast("Activity cleared");
-
-});
-
-
-/* =========================
-   API HEALTH
-========================= */
-
-async function checkAPIHealth() {
-
-    if (!API_BASE) {
-
-        $("#apiStatus").textContent = "Not Set";
-
-        $("#apiMessage").textContent =
-            "Add backend URL in Settings";
-
-        $("#systemStatus").textContent =
-            "Backend URL missing";
-
-        return;
-    }
-
-    requests++;
-
-    $("#apiStatus").textContent = "Checking";
-
-    $("#apiMessage").textContent =
-        "Connecting to backend...";
-
-    try {
-
-        const response = await fetch(
-            API_BASE.replace(/\/$/, "") + "/api/health"
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        $("#apiStatus").textContent = "Online";
-
-        $("#apiMessage").textContent =
-            data.message || "Backend is healthy";
-
-        $("#systemStatus").textContent =
-            "API connected";
-
-        toast("Backend API is online ✓");
-
-        logActivity(
-            "API health check succeeded"
-        );
-
-    } catch (error) {
-
-        $("#apiStatus").textContent =
-            "Offline";
-
-        $("#apiMessage").textContent =
-            error.message;
-
-        $("#systemStatus").textContent =
-            "API unavailable";
-
-        toast("Backend connection failed");
-
-        logActivity(
-            "API health check failed"
-        );
-    }
-
-    renderActivity();
-}
-
-
-/* API buttons */
-
-$("#healthBtn").addEventListener(
-    "click",
-    checkAPIHealth
-);
-
-$("#refreshBtn").addEventListener(
-    "click",
-    checkAPIHealth
-);
-
-
-/* =========================
-   FILE UPLOAD UI
-========================= */
-
-$("#chooseFiles").addEventListener(
-    "click",
-    () => $("#fileInput").click()
-);
-
-
-$("#fileInput").addEventListener(
-    "change",
-    () => {
-
-        const files =
-            Array.from($("#fileInput").files);
-
-        if (!files.length) {
-            return;
-        }
-
-        $("#fileNames").textContent =
-            files.map(file => file.name).join(", ");
-
-        toast(
-            files.length +
-            " file(s) selected"
-        );
-
-        logActivity(
-            files.length +
-            " file(s) selected for upload"
-        );
-    }
-);
-
-
-/* =========================
-   SETTINGS
-========================= */
-
-$("#apiUrl").value = API_BASE;
-
-
-$("#saveApi").addEventListener(
-    "click",
-    () => {
-
-        const url =
-            $("#apiUrl").value.trim().replace(/\/$/, "");
-
-        if (!url) {
-
-            toast(
-                "Please enter your backend URL"
-            );
-
-            return;
-        }
-
-        localStorage.setItem(
-            "bhasha_api_url",
-            url
-        );
-
-        API_BASE = url;
-
-        toast(
-            "Backend URL saved successfully"
-        );
-
-        logActivity(
-            "Backend API URL updated"
-        );
-
-        checkAPIHealth();
-    }
-);
-
-
-/* =========================
-   INITIALIZATION
-========================= */
-
-logActivity(
-    "Admin dashboard initialized"
-);
-
-renderActivity();
-
-checkAPIHealth();
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+const base = () => API_BASE.replace(/\/$/, "");
+function toast(msg){const e=$("#toast");e.textContent=msg;e.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.remove("show"),2800)}
+function log(msg){events.unshift({message:msg,time:new Date().toLocaleTimeString()});events=events.slice(0,30);renderLocalActivity()}
+function renderLocalActivity(){const h=events.map(x=>`<div class="activity"><span class="status-dot"></span><div><b>${esc(x.message)}</b><small>${esc(x.time)}</small></div></div>`).join("")||"<p>No local activity yet.</p>";if($("#activityList"))$("#activityList").innerHTML=h}
+function showPage(id){$$('.page').forEach(p=>p.classList.remove('active'));const p=$("#"+id);if(p)p.classList.add('active');$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.section===id));const titles={dashboard:'Dashboard',students:'Students',teachers:'Teachers',lessons:'Lessons',tutor:'AI Tutor',languages:'Languages',uploads:'Uploads',activity:'Activity',settings:'Settings'};$("#pageTitle").textContent=titles[id]||'Dashboard';$("#sidebar").classList.remove('open');loadPageData(id)}
+function modal(id,on=true){$(id).classList.toggle('hidden',!on)}
+async function api(path,opts={}){requests++;const headers=new Headers(opts.headers||{});if(!headers.has('Content-Type')&&opts.body&&!(opts.body instanceof FormData))headers.set('Content-Type','application/json');if(TOKEN)headers.set('Authorization','Bearer '+TOKEN);const r=await fetch(base()+path,{...opts,headers});let data=null;try{data=await r.json()}catch{};if(r.status===401){TOKEN='';localStorage.removeItem('bhasha_admin_token');showLogin('Session expired. Please sign in again.');throw new Error(data?.message||'Authentication required')}if(!r.ok||data?.success===false)throw new Error(data?.message||`Request failed (${r.status})`);return data?.data??data}
+async function health(){try{const r=await fetch(base()+'/api/health');const d=await r.json();$("#apiStatus").textContent=r.ok?'Online':'Offline';$("#apiMessage").textContent=d.message||'Backend reachable';$("#systemStatus").textContent=r.ok?'API connected':'API unavailable';log(r.ok?'API health check succeeded':'API health check failed');return r.ok}catch(e){$("#apiStatus").textContent='Offline';$("#apiMessage").textContent=e.message;$("#systemStatus").textContent='API unavailable';return false}}
+function showLogin(msg=''){if(msg)$("#loginMessage").textContent=msg;$("#loginApi").value=API_BASE;modal('#loginModal',true)}
+async function login(){const url=$("#loginApi").value.trim().replace(/\/$/,'');const identifier=$("#loginIdentifier").value.trim();const password=$("#loginPassword").value;if(!url||!identifier||!password){$("#loginMessage").textContent='Enter backend URL, email/username and password.';return}$("#loginBtn").disabled=true;try{API_BASE=url;const r=await fetch(url+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier,password})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||'Login failed');TOKEN=d.data.token;currentUser=d.data.user;if(currentUser.role!=='admin'){TOKEN='';throw new Error('This account is not an administrator.')}localStorage.setItem('bhasha_api_url',API_BASE);localStorage.setItem('bhasha_admin_token',TOKEN);applyUser();modal('#loginModal',false);toast('Admin login successful');log('Administrator signed in');await refreshAll()}catch(e){$("#loginMessage").textContent=e.message;toast(e.message)}finally{$("#loginBtn").disabled=false}}
+function applyUser(){if(!currentUser)return;$("#profileName").textContent=currentUser.name||'Administrator';$("#profileRole").textContent=(currentUser.role||'admin').toUpperCase();$("#avatar").textContent=(currentUser.name||'A').charAt(0).toUpperCase()}
+async function validateSession(){if(!TOKEN){showLogin();return false}try{currentUser=await api('/api/auth/me');if(currentUser.role!=='admin')throw new Error('Administrator role required');applyUser();return true}catch(e){showLogin(e.message);return false}}
+function statSet(id,v){if($(id))$(id).textContent=v??'0'}
+async function loadDashboard(){if(!TOKEN)return;try{const d=await api('/api/admin/dashboard');statSet('#users',d.totals?.users??d.total_users??0);statSet('#students',d.totals?.students??0);statSet('#aiQuestions',d.totals?.ai_questions??0);const rows=d.recent_activity||[];$("#activityList").innerHTML=rows.length?rows.map(a=>`<div class="activity"><span class="status-dot"></span><div><b>${esc(a.action)}</b><small>${esc(a.detail||'')} • ${esc(a.created_at||'')}</small></div></div>`).join(''):'<p>No database activity yet.</p>';log('Dashboard data refreshed')}catch(e){toast(e.message)}}
+async function users(role,search=''){const q=new URLSearchParams({role});if(search)q.set('q',search);return api('/api/admin/users?'+q.toString())}
+function userRows(rows,tbody){$(tbody).innerHTML=rows.length?rows.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td>${esc(u.language_preference||'English')}</td><td><span class="badge ${u.active?'ok':'off'}">${u.active?'Active':'Inactive'}</span></td><td>${fmt(u.created_at)}</td><td><button class="mini" data-edit-user="${u.id}">Edit</button><button class="mini" data-toggle-user="${u.id}">${u.active?'Deactivate':'Activate'}</button><button class="mini danger" data-delete-user="${u.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No users found.</td></tr>'}
+async function loadUsers(role){const search=$(role==='student'?'#studentSearch':'#teacherSearch').value.trim();try{const rows=await users(role,search);userRows(rows,role==='student'?'#studentRows':'#teacherRows')}catch(e){toast(e.message)}}
+function userForm(role,u={}){openForm(role==='student'?'Add Student':'Add Teacher',`<label>Name<input id="fName" value="${esc(u.name||'')}"></label><label>Email<input id="fEmail" type="email" value="${esc(u.email||'')}"></label>${u.id?'':'<label>Password<input id="fPassword" type="password"></label>'}<label>Language<input id="fLang" value="${esc(u.language_preference||'English')}"></label><div class="form-actions"><button class="primary" id="submitUser">${u.id?'Save Changes':'Create User'}</button></div>`);$("#submitUser").onclick=async()=>{try{const body={name:$("#fName").value,email:$("#fEmail").value,language_preference:$("#fLang").value,role};if(!u.id)body.password=$("#fPassword").value;await api(u.id?`/api/admin/users/${u.id}`:'/api/admin/users',{method:u.id?'PUT':'POST',body:JSON.stringify(body)});modal('#formModal',false);toast(u.id?'User updated':'User created');log(`${role} account saved`);await loadUsers(role);await loadDashboard()}catch(e){toast(e.message)}}}
+async function editUser(id){try{const rows=await api('/api/admin/users');const u=rows.find(x=>x.id==id);if(u)userForm(u.role,u)}catch(e){toast(e.message)}}
+async function toggleUser(id){if(!confirm('Change this user status?'))return;try{await api(`/api/admin/users/${id}/deactivate`,{method:'POST'});toast('User status changed');log('User status changed');await loadUsers('student');await loadUsers('teacher');await loadDashboard()}catch(e){toast(e.message)}}
+async function deleteUser(id){if(!confirm('Delete this user permanently?'))return;try{await api(`/api/admin/users/${id}`,{method:'DELETE'});toast('User deleted');log('User deleted');await loadUsers('student');await loadUsers('teacher');await loadDashboard()}catch(e){toast(e.message)}}
+async function loadLessons(){try{const q=$("#lessonSearch").value.trim();const rows=await api('/api/admin/lessons'+(q?'?q='+encodeURIComponent(q):''));$("#lessonRows").innerHTML=rows.length?rows.map(l=>`<tr><td><strong>${esc(l.title)}</strong><small>${esc(l.description||'')}</small></td><td>${esc(l.subject)}</td><td>${esc(l.grade||'')}</td><td>${esc(l.language||'')}</td><td><span class="badge ${l.status==='published'?'ok':'off'}">${esc(l.status)}</span></td><td>${l.views??0}</td><td><button class="mini" data-edit-lesson="${l.id}">Edit</button><button class="mini" data-publish-lesson="${l.id}">${l.status==='published'?'Unpublish':'Publish'}</button><button class="mini danger" data-delete-lesson="${l.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty">No lessons found.</td></tr>'}catch(e){toast(e.message)}}
+function lessonForm(l={}){openForm(l.id?'Edit Lesson':'New Lesson',`<label>Title<input id="fTitle" value="${esc(l.title||'')}"></label><label>Description<textarea id="fDesc">${esc(l.description||'')}</textarea></label><div class="form-grid"><label>Subject<input id="fSubject" value="${esc(l.subject||'')}"></label><label>Grade<input id="fGrade" value="${esc(l.grade||'')}"></label><label>Language<input id="fLessonLang" value="${esc(l.language||'English')}"></label><label>Status<select id="fStatus"><option value="draft">Draft</option><option value="published">Published</option></select></label></div><label>Thumbnail URL<input id="fThumb" value="${esc(l.thumbnail||'')}"></label><div class="form-actions"><button class="primary" id="submitLesson">${l.id?'Save Changes':'Create Lesson'}</button></div>`);if(l.status)$("#fStatus").value=l.status;$("#submitLesson").onclick=async()=>{try{const body={title:$("#fTitle").value,description:$("#fDesc").value,subject:$("#fSubject").value,grade:$("#fGrade").value,language:$("#fLessonLang").value,status:$("#fStatus").value,thumbnail:$("#fThumb").value};await api(l.id?`/api/admin/lessons/${l.id}`:'/api/lessons',{method:l.id?'PUT':'POST',body:JSON.stringify(body)});modal('#formModal',false);toast('Lesson saved');log('Lesson saved');await loadLessons()}catch(e){toast(e.message)}}}
+async function editLesson(id){try{const rows=await api('/api/admin/lessons');const l=rows.find(x=>x.id==id);if(l)lessonForm(l)}catch(e){toast(e.message)}}
+async function publishLesson(id){try{await api(`/api/teacher/lessons/${id}/publish`,{method:'POST'});toast('Lesson status changed');await loadLessons()}catch(e){toast(e.message)}}
+async function deleteLesson(id){if(!confirm('Delete this lesson?'))return;try{await api(`/api/lessons/${id}`,{method:'DELETE'});toast('Lesson deleted');await loadLessons()}catch(e){toast(e.message)}}
+async function loadLanguages(){try{const rows=await api('/api/admin/languages');$("#languageRows").innerHTML=rows.length?rows.map(l=>`<tr><td><strong>${esc(l.name)}</strong></td><td>${esc(l.native_name||'')}</td><td>${esc(l.code)}</td><td>${l.is_default?'✓':'—'}</td><td><span class="badge ${l.active?'ok':'off'}">${l.active?'Active':'Inactive'}</span></td><td>${l.sort_order}</td><td><button class="mini" data-edit-lang="${l.id}">Edit</button><button class="mini danger" data-delete-lang="${l.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty">No languages configured.</td></tr>'}catch(e){toast(e.message)}}
+function languageForm(l={}){openForm(l.id?'Edit Language':'Add Language',`<div class="form-grid"><label>Name<input id="fLName" value="${esc(l.name||'')}"></label><label>Native Name<input id="fLNative" value="${esc(l.native_name||'')}"></label><label>Code<input id="fLCode" value="${esc(l.code||'')}"></label><label>Order<input id="fLOrder" type="number" value="${l.sort_order??999}"></label></div><label><input id="fLActive" type="checkbox" ${l.active!==false?'checked':''}> Active</label><label><input id="fLDefault" type="checkbox" ${l.is_default?'checked':''}> Make default language</label><div class="form-actions"><button class="primary" id="submitLang">Save Language</button></div>`);$("#submitLang").onclick=async()=>{try{const body={name:$("#fLName").value,native_name:$("#fLNative").value,code:$("#fLCode").value,sort_order:Number($("#fLOrder").value),active:$("#fLActive").checked,is_default:$("#fLDefault").checked};await api(l.id?`/api/admin/languages/${l.id}`:'/api/admin/languages',{method:l.id?'PUT':'POST',body:JSON.stringify(body)});modal('#formModal',false);toast('Language saved');await loadLanguages()}catch(e){toast(e.message)}}}
+async function loadMedia(){try{const rows=await api('/api/admin/media');$("#mediaRows").innerHTML=rows.length?rows.map(m=>`<tr><td><strong>${esc(m.original_name)}</strong></td><td>${esc(m.file_type)}</td><td>${bytes(m.size)}</td><td>${fmt(m.created_at)}</td><td><a class="mini" href="${esc(base()+m.url)}" target="_blank" rel="noopener">Open</a><button class="mini danger" data-delete-media="${m.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty">No uploaded media.</td></tr>'}catch(e){toast(e.message)}}
+async function uploadSelected(){const files=Array.from($("#fileInput").files);if(!files.length)return;for(const file of files){const fd=new FormData();fd.append('file',file);try{await api('/api/admin/media',{method:'POST',body:fd});log('Uploaded '+file.name)}catch(e){toast(file.name+': '+e.message)}}toast('Upload process completed');$("#fileInput").value='';$("#fileNames").textContent='';$("#uploadFiles").disabled=true;await loadMedia()}
+async function deleteMedia(id){if(!confirm('Delete this file?'))return;try{await api(`/api/admin/media/${id}`,{method:'DELETE'});toast('File deleted');await loadMedia()}catch(e){toast(e.message)}}
+async function loadActivity(){try{const rows=await api('/api/admin/activity');$("#fullActivity").innerHTML=rows.length?rows.map(a=>`<tr><td>${esc(a.user_name||'Guest')}</td><td>${esc(a.action)}</td><td>${esc(a.detail||'')}</td><td>${esc(a.ip||'')}</td><td>${fmt(a.created_at)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No activity.</td></tr>'}catch(e){toast(e.message)}}
+async function loadTutor(){try{const d=await api('/api/admin/ai-usage');statSet('#tutorQuestions',d.totals?.ai_questions||0);statSet('#tutorTranslations',d.totals?.translations||0);statSet('#tutorVoice',d.totals?.voice_requests||0);const rows=await api('/api/admin/chat-log');$("#chatRows").innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.user_name||'Guest')}</td><td>${esc(x.language)}</td><td>${esc(x.message)}</td><td>${esc(x.reply)}</td><td>${fmt(x.created_at)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No AI conversations.</td></tr>'}catch(e){toast(e.message)}}
+async function loadSettings(){try{const d=await api('/api/admin/settings');$("#setWebsiteName").value=d.website_name||'';$("#setTagline").value=d.tagline||'';$("#setDefaultLanguage").value=d.default_language||'English';$("#setTheme").value=d.theme_mode||'light'}catch(e){toast(e.message)}}
+async function saveWebsiteSettings(){try{await api('/api/admin/settings',{method:'PUT',body:JSON.stringify({website_name:$("#setWebsiteName").value,tagline:$("#setTagline").value,default_language:$("#setDefaultLanguage").value,theme_mode:$("#setTheme").value})});toast('Website settings saved');log('Website settings updated')}catch(e){toast(e.message)}}
+function openForm(title,body){$("#formTitle").textContent=title;$("#formBody").innerHTML=body;modal('#formModal',true)}
+function fmt(v){if(!v)return '—';try{return new Date(v).toLocaleString()}catch{return v}}
+function bytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}
+async function loadPageData(id){if(!TOKEN)return;if(id==='dashboard')await loadDashboard();if(id==='students')await loadUsers('student');if(id==='teachers')await loadUsers('teacher');if(id==='lessons')await loadLessons();if(id==='tutor')await loadTutor();if(id==='languages')await loadLanguages();if(id==='uploads')await loadMedia();if(id==='activity')await loadActivity();if(id==='settings')await loadSettings()}
+async function refreshAll(){await health();await loadDashboard();const id=document.querySelector('.page.active')?.id;if(id)await loadPageData(id)}
+
+document.addEventListener('click',e=>{const nav=e.target.closest('.nav-item,[data-section]');if(nav&&nav.dataset.section){e.preventDefault();showPage(nav.dataset.section)}const x=e.target.closest('[data-add-user]');if(x)userForm(x.dataset.addUser);const eu=e.target.closest('[data-edit-user]');if(eu)editUser(eu.dataset.editUser);const tu=e.target.closest('[data-toggle-user]');if(tu)toggleUser(tu.dataset.toggleUser);const du=e.target.closest('[data-delete-user]');if(du)deleteUser(du.dataset.deleteUser);const el=e.target.closest('[data-edit-lesson]');if(el)editLesson(el.dataset.editLesson);const pl=e.target.closest('[data-publish-lesson]');if(pl)publishLesson(pl.dataset.publishLesson);const dl=e.target.closest('[data-delete-lesson]');if(dl)deleteLesson(dl.dataset.deleteLesson);const eg=e.target.closest('[data-edit-lang]');if(eg)api('/api/admin/languages').then(r=>languageForm(r.find(x=>x.id==eg.dataset.editLang))).catch(x=>toast(x.message));const dg=e.target.closest('[data-delete-lang]');if(dg)confirm('Delete this language?')&&api(`/api/admin/languages/${dg.dataset.deleteLang}`,{method:'DELETE'}).then(loadLanguages).catch(x=>toast(x.message));const dm=e.target.closest('[data-delete-media]');if(dm)deleteMedia(dm.dataset.deleteMedia)});
+$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#healthBtn').onclick=health;$('#refreshBtn').onclick=refreshAll;$('#logoutBtn').onclick=()=>{TOKEN='';currentUser=null;localStorage.removeItem('bhasha_admin_token');showLogin('Logged out.')};$('#loginBtn').onclick=login;$('#closeLogin').onclick=()=>{if(TOKEN)modal('#loginModal',false)};$('#closeForm').onclick=()=>modal('#formModal',false);$('#addLesson').onclick=()=>lessonForm();$('#lessonReload').onclick=loadLessons;$('#studentReload').onclick=()=>loadUsers('student');$('#teacherReload').onclick=()=>loadUsers('teacher');$('#chatReload').onclick=loadTutor;$('#addLanguage').onclick=()=>languageForm();$('#mediaReload').onclick=loadMedia;$('#activityReload').onclick=loadActivity;$('#saveWebsiteSettings').onclick=saveWebsiteSettings;$('#clearActivity').onclick=()=>{events=[];renderLocalActivity();toast('Local activity cleared')};$('#chooseFiles').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=()=>{const f=Array.from($('#fileInput').files);$('#fileNames').textContent=f.map(x=>x.name).join(', ');$('#uploadFiles').disabled=!f.length};$('#uploadFiles').onclick=uploadSelected;$('#saveApi').onclick=()=>{const u=$('#apiUrl').value.trim().replace(/\/$/,'');if(!u)return toast('Enter a backend URL');API_BASE=u;localStorage.setItem('bhasha_api_url',u);toast('Backend URL saved');health()};['studentSearch','teacherSearch','lessonSearch'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter')id==='studentSearch'?loadUsers('student'):id==='teacherSearch'?loadUsers('teacher'):loadLessons()}));
+$('#apiUrl').value=API_BASE;
+(async()=>{renderLocalActivity();const ok=await validateSession();if(ok)await refreshAll()})();
