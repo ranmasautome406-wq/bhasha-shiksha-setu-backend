@@ -116,6 +116,26 @@ def public_settings():
     })
 
 
+@bp.get("/materials")
+def public_materials():
+    """Public study-material library for students and visitors."""
+    from backend.models import Document, Media
+    docs = Document.query.order_by(Document.created_at.desc()).limit(500).all()
+    out = []
+    for d in docs:
+        if not d.media_id:
+            continue
+        media = db.session.get(Media, d.media_id)
+        if not media:
+            continue
+        item = d.to_dict()
+        item.update({"original_name": media.original_name, "file_type": media.file_type,
+                     "mime_type": media.mime_type, "size": media.size,
+                     "url": "/uploads/" + media.filename})
+        out.append(item)
+    return ok(out)
+
+
 @bp.get("/site-info")
 def site_info():
     """Public site branding/contact info — driven by Admin → Settings."""

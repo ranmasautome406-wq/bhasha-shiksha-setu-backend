@@ -890,3 +890,30 @@ alias_bp.add_url_rule("/lessons/<int:lesson_id>", view_func=update_lesson, endpo
 alias_bp.add_url_rule("/lessons/<int:lesson_id>", view_func=delete_lesson, endpoint="lessons_root_delete", methods=["DELETE"])
 alias_bp.add_url_rule("/admin/content", view_func=save_text_content,
                       endpoint="admin_content_root", methods=["POST", "PUT"])
+
+# ==========================================================================
+# Video dubbing management
+# ========================================================================== 
+@bp.get("/video-dubbing")
+@roles_required("admin")
+def video_dubbing_jobs():
+    from backend.models import VideoDubbingJob, User
+    rows = VideoDubbingJob.query.order_by(VideoDubbingJob.created_at.desc()).limit(200).all()
+    out=[]
+    for r in rows:
+        d=r.to_dict(); u=db.session.get(User,r.user_id); d["user_name"]=u.name if u else "Unknown"; d["user_email"]=u.email if u else ""; out.append(d)
+    return ok(out)
+
+@bp.delete("/video-dubbing/<int:job_id>")
+@roles_required("admin")
+def delete_video_dubbing_job(job_id):
+    from backend.models import VideoDubbingJob
+    row=db.session.get(VideoDubbingJob,job_id)
+    if not row:return fail("Video dubbing job not found.",404)
+    try:
+        from backend.services import video_dubbing_service as dubbing
+        if dubbing.configured(): dubbing.delete_dub(row.dubbing_id)
+    except Exception:
+        pass
+    db.session.delete(row); db.session.commit()
+    return ok(None,"Video dubbing job deleted.")
