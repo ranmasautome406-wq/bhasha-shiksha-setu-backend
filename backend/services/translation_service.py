@@ -124,14 +124,16 @@ def translate(text, source_language="English", target_language="Marathi", user=N
         except Exception as e:
             current_app.logger.warning("LLM translate failed: %s", e)
 
-    # 2) Free Google endpoint
-    if provider in ("google", "llm", "openai", "auto"):
+    # 2) Free Google endpoint — use it even when the configured provider is
+    #    "demo". This is what makes arbitrary sentences/questions translatable
+    #    instead of limiting translation to the tiny demo dictionary.
+    if provider in ("demo", "google", "llm", "openai", "auto"):
         result = _google_translate(text, target_language)
         if result:
             _save(user, text, result, source_language, target_language, "google")
             return result, "google"
 
-    # 3) Demo (always available)
+    # 3) Demo fallback (offline only)
     result = _demo_translate(text, target_language)
     _save(user, text, result, source_language, target_language, "demo")
     return result, "demo"
