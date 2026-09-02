@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhasha Shiksha Setu | Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">भा</div>
+            <div>
+                <h2>Bhasha</h2>
+                <span>Admin Console</span>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" data-section="dashboard">
+                ◈ <span>Dashboard</span>
+            </button>
+
+            <button class="nav-item" data-section="students">
+                ◉ <span>Students</span>
+            </button>
+
+            <button class="nav-item" data-section="teachers">
+                ♟ <span>Teachers</span>
+            </button>
+
+            <button class="nav-item" data-section="lessons">
+                ▣ <span>Lessons</span>
+            </button>
+
+            <button class="nav-item" data-section="tutor">
+                ✦ <span>AI Tutor</span>
+            </button>
+
+            <button class="nav-item" data-section="languages">
+                文 <span>Languages</span>
+            </button>
+
+            <button class="nav-item" data-section="uploads">
+                ↑ <span>Uploads</span>
+            </button>
+
+            <button class="nav-item" data-section="activity">
+                ◷ <span>Activity</span>
+            </button>
+
+            <button class="nav-item" data-section="settings">
+                ⚙ <span>Settings</span>
+            </button>
+        </nav>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+
+            <div>
+                <strong>System Status</strong>
+                <small id="systemStatus">Checking...</small>
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <button class="menu-button" id="menuBtn">
+                ☰
+            </button>
+
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+                <p>Manage Bhasha Shiksha Setu</p>
+            </div>
+
+            <div class="profile">
+
+                <button class="icon-button" id="refreshBtn">
+                    ↻
+                </button>
+
+                <div class="avatar">
+                    A
+                </div>
+
+                <div class="profile-info">
+                    <strong>Administrator</strong>
+                    <small>Super Admin</small>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+        <section class="content">
+
+            <div id="toast" class="toast"></div>
+
+
+            <!-- DASHBOARD -->
+            <section class="page active" id="dashboard">
+
+                <div class="welcome">
+
+                    <div>
+                        <span class="eyebrow">
+                            BHASHA SHIKSHA SETU
+                        </span>
+
+                        <h2>
+                            Welcome back, Admin 👋
+                        </h2>
+
+                        <p>
+                            Monitor your multilingual education platform.
+                        </p>
+                    </div>
+
+                    <button class="primary" id="healthBtn">
+                        Check API Health
+                    </button>
+
+                </div>
+
+
+                <!-- STAT CARDS -->
+                <div class="stats">
+
+                    <article class="stat-card">
+
+                        <div class="stat-icon purple">
+                            ◉
+                        </div>
+
+                        <div>
+                            <span>Total Users</span>
+                            <strong id="users">—</strong>
+                            <small>Connected to API</small>
+                        </div>
+
+                    </article>
+
+
+                    <article class="stat-card">
+
+                        <div class="stat-icon blue">
+                            ♟
+                        </div>
+
+                        <div>
+                            <span>Students</span>
+                            <strong id="students">—</strong>
+                            <small>Student accounts</small>
+                        </div>
+
+                    </article>
+
+
+                    <article class="stat-card">
+
+                        <div class="stat-icon green">
+                            ✓
+                        </div>
+
+                        <div>
+                            <span>API Status</span>
+                            <strong id="apiStatus">Checking</strong>
+                            <small id="apiMessage">
+                                Waiting...
+                            </small>
+                        </div>
+
+                    </article>
+
+
+                    <article class="stat-card">
+
+                        <div class="stat-icon orange">
+                            ◷
+                        </div>
+
+                        <div>
+                            <span>Requests</span>
+                            <strong id="requests">0</strong>
+                            <small>Current session</small>
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- LOWER DASHBOARD -->
+                <div class="dashboard-grid">
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <h3>Platform Activity</h3>
+                                <p>Recent administrative events</p>
+                            </div>
+
+                            <button class="ghost" id="clearActivity">
+                                Clear
+                            </button>
+
+                        </div>
+
+                        <div id="activityList"></div>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <h3>Quick Actions</h3>
+                                <p>Common administration tools</p>
+                            </div>
+
+                        </div>
+
+                        <div class="quick-actions">
+
+                            <button data-section="students">
+                                Manage Students
+                            </button>
+
+                            <button data-section="teachers">
+                                Manage Teachers
+                            </button>
+
+                            <button data-section="lessons">
+                                Manage Lessons
+                            </button>
+
+                            <button data-section="uploads">
+                                Upload Content
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- STUDENTS -->
+            <section class="page" id="students">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            USER MANAGEMENT
+                        </span>
+
+                        <h2>Students</h2>
+
+                        <p>
+                            Manage student accounts and learning activity.
+                        </p>
+                    </div>
+
+                    <button class="primary">
+                        + Add Student
+                    </button>
+
+                </div>
+
+                <div class="panel empty-state">
+
+                    <div class="empty-icon">◉</div>
+
+                    <h3>
+                        Student Management
+                    </h3>
+
+                    <p>
+                        Connect your student API endpoint to display real records.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- TEACHERS -->
+            <section class="page" id="teachers">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            USER MANAGEMENT
+                        </span>
+
+                        <h2>Teachers</h2>
+
+                        <p>
+                            Manage teacher accounts and activity.
+                        </p>
+                    </div>
+
+                    <button class="primary">
+                        + Add Teacher
+                    </button>
+
+                </div>
+
+                <div class="panel empty-state">
+
+                    <div class="empty-icon">♟</div>
+
+                    <h3>
+                        Teacher Management
+                    </h3>
+
+                    <p>
+                        Connect your teacher API endpoint here.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- LESSONS -->
+            <section class="page" id="lessons">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            EDUCATIONAL CONTENT
+                        </span>
+
+                        <h2>Lessons</h2>
+
+                        <p>
+                            Manage multilingual learning content.
+                        </p>
+
+                    </div>
+
+                    <button class="primary">
+                        + New Lesson
+                    </button>
+
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <article class="feature-card">
+                        <h3>Lesson Library</h3>
+                        <p>Manage published lessons.</p>
+                    </article>
+
+                    <article class="feature-card">
+                        <h3>Drafts</h3>
+                        <p>Review unpublished lessons.</p>
+                    </article>
+
+                    <article class="feature-card">
+                        <h3>Categories</h3>
+                        <p>Organize subjects and grades.</p>
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- AI TUTOR -->
+            <section class="page" id="tutor">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            ARTIFICIAL INTELLIGENCE
+                        </span>
+
+                        <h2>AI Tutor</h2>
+
+                        <p>
+                            Monitor AI-powered learning interactions.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="stats three">
+
+                    <article class="stat-card">
+                        <div class="stat-icon purple">?</div>
+
+                        <div>
+                            <span>Questions</span>
+                            <strong>7,842</strong>
+                        </div>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-icon blue">文</div>
+
+                        <div>
+                            <span>Languages</span>
+                            <strong>8</strong>
+                        </div>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-icon green">✓</div>
+
+                        <div>
+                            <span>Success Rate</span>
+                            <strong>94%</strong>
+                        </div>
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- LANGUAGES -->
+            <section class="page" id="languages">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            MULTILINGUAL PLATFORM
+                        </span>
+
+                        <h2>Languages</h2>
+
+                        <p>
+                            Supported learning languages.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <article class="feature-card">
+                        <h3>हिन्दी</h3>
+                        <p>Hindi • 38%</p>
+                    </article>
+
+                    <article class="feature-card">
+                        <h3>मराठी</h3>
+                        <p>Marathi • 27%</p>
+                    </article>
+
+                    <article class="feature-card">
+                        <h3>English</h3>
+                        <p>English • 21%</p>
+                    </article>
+
+                    <article class="feature-card">
+                        <h3>বাংলা</h3>
+                        <p>Bengali • 7%</p>
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- UPLOADS -->
+            <section class="page" id="uploads">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            MEDIA LIBRARY
+                        </span>
+
+                        <h2>Uploads</h2>
+
+                        <p>
+                            Manage educational files and media.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel upload-box">
+
+                    <div class="upload-icon">
+                        ↑
+                    </div>
+
+                    <h3>
+                        Upload Educational Content
+                    </h3>
+
+                    <p>
+                        Choose PDF, images, audio or other resources.
+                    </p>
+
+                    <input type="file" id="fileInput" multiple hidden>
+
+                    <button class="primary" id="chooseFiles">
+                        Choose Files
+                    </button>
+
+                    <p id="fileNames"></p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ACTIVITY -->
+            <section class="page" id="activity">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            AUDIT LOG
+                        </span>
+
+                        <h2>Activity</h2>
+
+                        <p>
+                            Monitor important platform events.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="panel" id="fullActivity"></div>
+
+            </section>
+
+
+            <!-- SETTINGS -->
+            <section class="page" id="settings">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">
+                            SYSTEM
+                        </span>
+
+                        <h2>Settings</h2>
+
+                        <p>
+                            Configure the backend connection.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel settings">
+
+                    <label>
+                        Backend API URL
+
+                        <input
+                            type="url"
+                            id="apiUrl"
+                            placeholder="https://your-backend.onrender.com"
+                        >
+
+                    </label>
+
+                    <button class="primary" id="saveApi">
+                        Save Settings
+                    </button>
+
+                    <p class="security-note">
+                        Never put database passwords or private API keys
+                        inside frontend files.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="admin.js"></script>
+
+</body>
+</html>
