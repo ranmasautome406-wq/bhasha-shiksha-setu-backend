@@ -11,16 +11,12 @@ from backend.utils import hash_password
 
 DEFAULT_LANGUAGES = [
     ("en", "English", "English", True, 1),
-    ("mr", "Marathi", "मराठी", False, 2),
-    ("hi", "Hindi", "हिन्दी", False, 3),
+    ("hi", "Hindi", "हिन्दी", False, 2),
+    ("mr", "Marathi", "मराठी", False, 3),
     ("gu", "Gujarati", "ગુજરાતી", False, 4),
     ("bn", "Bengali", "বাংলা", False, 5),
     ("ta", "Tamil", "தமிழ்", False, 6),
     ("te", "Telugu", "తెలుగు", False, 7),
-    ("kn", "Kannada", "ಕನ್ನಡ", False, 8),
-    ("ml", "Malayalam", "മലയാളം", False, 9),
-    ("pa", "Punjabi", "ਪੰਜਾਬੀ", False, 10),
-    ("ur", "Urdu", "اردو", False, 11),
 ]
 
 DEFAULT_SETTINGS = {

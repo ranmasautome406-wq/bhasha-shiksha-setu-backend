@@ -104,6 +104,9 @@ def create_app(config_object=Config):
         teacher,
         tutor,
         voice,
+        video_dubbing,
+        quiz,
+        learning,
     )
 
     blueprints = [
@@ -113,6 +116,9 @@ def create_app(config_object=Config):
         teacher.bp,
         tutor.bp,
         voice.bp,
+        video_dubbing.bp,
+        quiz.bp,
+        learning.bp,
         admin.bp,
         admin.alias_bp,
     ]

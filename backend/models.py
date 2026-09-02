@@ -289,3 +289,66 @@ class ActivityLog(db.Model):
                 "role": self.role, "action": self.action, "detail": self.detail,
                 "ip": self.ip,
                 "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class VideoDubbingJob(db.Model):
+    """A student's asynchronous video/audio dubbing request."""
+    __tablename__ = "video_dubbing_jobs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    dubbing_id = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    source_url = db.Column(db.String(1000), default="")
+    original_filename = db.Column(db.String(255), default="")
+    source_language = db.Column(db.String(20), default="auto")
+    target_language = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(30), default="preparing", index=True)
+    error_message = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id, "user_id": self.user_id, "dubbing_id": self.dubbing_id,
+            "source_url": self.source_url, "original_filename": self.original_filename,
+            "source_language": self.source_language, "target_language": self.target_language,
+            "status": self.status, "error_message": self.error_message,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Quiz(db.Model):
+    __tablename__ = "quizzes"
+    id=db.Column(db.Integer,primary_key=True)
+    lesson_id=db.Column(db.Integer,db.ForeignKey("lessons.id"),nullable=False,index=True)
+    title=db.Column(db.String(200),nullable=False)
+    language=db.Column(db.String(40),default="English")
+    created_at=db.Column(db.DateTime,nullable=False,default=utcnow)
+    questions=db.relationship("Question",backref="quiz",cascade="all, delete-orphan",order_by="Question.id",lazy="selectin")
+    def to_dict(self,full=False):
+        d={"id":self.id,"lesson_id":self.lesson_id,"title":self.title,"language":self.language,"created_at":self.created_at.isoformat() if self.created_at else None}
+        if full:d["questions"]=[q.to_dict() for q in self.questions]
+        return d
+
+class Question(db.Model):
+    __tablename__="quiz_questions"
+    id=db.Column(db.Integer,primary_key=True)
+    quiz_id=db.Column(db.Integer,db.ForeignKey("quizzes.id"),nullable=False,index=True)
+    text=db.Column(db.Text,nullable=False)
+    options_json=db.Column(db.Text,nullable=False)
+    correct_index=db.Column(db.Integer,nullable=False,default=0)
+    def to_dict(self):
+        import json
+        return {"id":self.id,"quiz_id":self.quiz_id,"text":self.text,"options":json.loads(self.options_json or "[]")}
+
+class QuizAttempt(db.Model):
+    __tablename__="quiz_attempts"
+    id=db.Column(db.Integer,primary_key=True)
+    user_id=db.Column(db.Integer,db.ForeignKey("users.id"),nullable=False,index=True)
+    quiz_id=db.Column(db.Integer,db.ForeignKey("quizzes.id"),nullable=False,index=True)
+    score=db.Column(db.Integer,default=0)
+    total=db.Column(db.Integer,default=0)
+    percentage=db.Column(db.Integer,default=0)
+    created_at=db.Column(db.DateTime,nullable=False,default=utcnow)
+    def to_dict(self):
+        return {"id":self.id,"user_id":self.user_id,"quiz_id":self.quiz_id,"score":self.score,"total":self.total,"percentage":self.percentage,"created_at":self.created_at.isoformat() if self.created_at else None}

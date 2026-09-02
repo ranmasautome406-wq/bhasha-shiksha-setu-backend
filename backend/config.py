@@ -106,7 +106,7 @@ class Config:
     MAX_UPLOAD_MB = int(
         os.getenv(
             "MAX_UPLOAD_MB",
-            "50"
+            "250"
         )
     )
 
@@ -164,6 +164,14 @@ class Config:
         "AI_BASE_URL",
         "https://api.openai.com/v1"
     )
+
+
+    # --------------------------------------------------------
+    # Video dubbing
+    # --------------------------------------------------------
+
+    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+    VIDEO_DUBBING_PROVIDER = os.getenv("VIDEO_DUBBING_PROVIDER", "elevenlabs")
 
 
     # --------------------------------------------------------
