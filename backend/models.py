@@ -352,3 +352,27 @@ class QuizAttempt(db.Model):
     created_at=db.Column(db.DateTime,nullable=False,default=utcnow)
     def to_dict(self):
         return {"id":self.id,"user_id":self.user_id,"quiz_id":self.quiz_id,"score":self.score,"total":self.total,"percentage":self.percentage,"created_at":self.created_at.isoformat() if self.created_at else None}
+
+class TutorKnowledge(db.Model):
+    __tablename__ = "tutor_knowledge"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    tag = db.Column(db.String(100), nullable=False, index=True)
+    subject = db.Column(db.String(100), nullable=True)
+
+    question = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+
+    language = db.Column(db.String(20), nullable=False, default="en")
+
+    keywords = db.Column(db.Text, nullable=True)
+
+    active = db.Column(db.Boolean, default=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
