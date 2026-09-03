@@ -227,7 +227,18 @@ def create_app(config_object=Config):
 
     # ---------------------------------------------------------
 
-    @app.route("/uploads/<path:filename>")
+    @app.route("/api/admin/media", methods=["POST"])
+def upload_media():
+    # इसका पूरा existing code
+    ...
+    return ...
+
+
+# ==================================================
+# SERVE UPLOADED FILES
+# ==================================================
+
+@app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     upload_dir = Path(app.config["UPLOAD_DIR"]).resolve()
     requested_file = (upload_dir / filename).resolve()
@@ -250,6 +261,11 @@ def uploaded_file(filename):
         str(upload_dir),
         filename
     )
+
+
+# ==================================================
+# इसके बाद तुम्हारा existing 404 handler
+# ==================================================
     # 404 handler
     # ---------------------------------------------------------
     @app.errorhandler(404)
