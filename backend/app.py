@@ -238,29 +238,7 @@ def upload_media():
 # SERVE UPLOADED FILES
 # ==================================================
 
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    upload_dir = Path(app.config["UPLOAD_DIR"]).resolve()
-    requested_file = (upload_dir / filename).resolve()
 
-    try:
-        requested_file.relative_to(upload_dir)
-    except ValueError:
-        return jsonify({
-            "success": False,
-            "message": "Invalid file path."
-        }), 400
-
-    if not requested_file.is_file():
-        return jsonify({
-            "success": False,
-            "message": "Uploaded file not found."
-        }), 404
-
-    return send_from_directory(
-        str(upload_dir),
-        filename
-    )
 
 
 # ==================================================
